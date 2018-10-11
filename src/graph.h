@@ -146,6 +146,15 @@ struct Edge {
   /// full contents of a response file (if applicable)
   string EvaluateCommand(bool incl_rsp_file = false);
 
+  /// Expand all variables in a command and return it as a string.
+  /// if ECM_EXPAND_RSPFILE is specified, the @rspfile will be
+  /// substituted with the contents of the response file
+  enum EvaluateCommandMode {
+  ECM_NORMAL,
+  ECM_EXPAND_RSPFILE
+  };
+  string EvaluateCommandWithRspfile(EvaluateCommandMode mode = ECM_EXPAND_RSPFILE);
+
   /// Returns the shell-escaped value of |key|.
   string GetBinding(const string& key);
   bool GetBindingBool(const string& key);

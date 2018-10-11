@@ -369,6 +369,30 @@ string Edge::EvaluateCommand(bool incl_rsp_file) {
   return command;
 }
 
+string Edge::EvaluateCommandWithRspfile(EvaluateCommandMode mode) {
+  string command = EvaluateCommand();
+  if (mode == ECM_NORMAL)
+    return command;
+
+  string rspfile = GetUnescapedRspfile();
+  if (rspfile.empty())
+    return command;
+
+  size_t index = command.find(rspfile);
+  if (index == 0 || index == string::npos || command[index - 1] != '@')
+    return command;
+
+  string rspfile_content = GetBinding("rspfile_content");
+  size_t newline_index = 0;
+  while ((newline_index = rspfile_content.find('\n', newline_index)) !=
+         string::npos) {
+    rspfile_content.replace(newline_index, 1, 1, ' ');
+    ++newline_index;
+  }
+  command.replace(index - 1, rspfile.length() + 1, rspfile_content);
+  return command;
+}
+
 string Edge::GetBinding(const string& key) {
   EdgeEnv env(this, EdgeEnv::kShellEscape);
   return env.LookupVariable(key);

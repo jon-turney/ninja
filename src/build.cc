@@ -152,7 +152,7 @@ void BuildStatus::BuildEdgeFinished(Edge* edge,
       outputs += (*o)->path() + " ";
 
     printer_.PrintOnNewLine("FAILED: " + outputs + "\n");
-    printer_.PrintOnNewLine(edge->EvaluateCommand() + "\n");
+    printer_.PrintOnNewLine(edge->EvaluateCommandWithRspfile() + "\n");
   }
 
   if (!output.empty()) {
@@ -293,7 +293,7 @@ void BuildStatus::PrintStatus(Edge* edge, EdgeStatus status) {
 
   string to_print = edge->GetBinding("description");
   if (to_print.empty() || force_full_command)
-    to_print = edge->GetBinding("command");
+    to_print = edge->EvaluateCommandWithRspfile();
 
   to_print = FormatProgressStatus(progress_status_format_, status) + to_print;
 

@@ -662,34 +662,6 @@ void EncodeJSONString(const char *str) {
   }
 }
 
-enum EvaluateCommandMode {
-  ECM_NORMAL,
-  ECM_EXPAND_RSPFILE
-};
-string EvaluateCommandWithRspfile(Edge* edge, EvaluateCommandMode mode) {
-  string command = edge->EvaluateCommand();
-  if (mode == ECM_NORMAL)
-    return command;
-
-  string rspfile = edge->GetUnescapedRspfile();
-  if (rspfile.empty())
-    return command;
-
-  size_t index = command.find(rspfile);
-  if (index == 0 || index == string::npos || command[index - 1] != '@')
-    return command;
-
-  string rspfile_content = edge->GetBinding("rspfile_content");
-  size_t newline_index = 0;
-  while ((newline_index = rspfile_content.find('\n', newline_index)) !=
-         string::npos) {
-    rspfile_content.replace(newline_index, 1, 1, ' ');
-    ++newline_index;
-  }
-  command.replace(index - 1, rspfile.length() + 1, rspfile_content);
-  return command;
-}
-
 int NinjaMain::ToolCompilationDatabase(const Options* options, int argc,
                                        char* argv[]) {
   // The compdb tool uses getopt, and expects argv[0] to contain the name of
@@ -697,14 +669,14 @@ int NinjaMain::ToolCompilationDatabase(const Options* options, int argc,
   argc++;
   argv--;
 
-  EvaluateCommandMode eval_mode = ECM_NORMAL;
+  Edge::EvaluateCommandMode eval_mode = Edge::ECM_NORMAL;
 
   optind = 1;
   int opt;
   while ((opt = getopt(argc, argv, const_cast<char*>("hx"))) != -1) {
     switch(opt) {
       case 'x':
-        eval_mode = ECM_EXPAND_RSPFILE;
+        eval_mode = Edge::ECM_EXPAND_RSPFILE;
         break;
 
       case 'h':
@@ -746,7 +718,7 @@ int NinjaMain::ToolCompilationDatabase(const Options* options, int argc,
         printf("\n  {\n    \"directory\": \"");
         EncodeJSONString(&cwd[0]);
         printf("\",\n    \"command\": \"");
-        EncodeJSONString(EvaluateCommandWithRspfile(*e, eval_mode).c_str());
+        EncodeJSONString((*e)->EvaluateCommandWithRspfile(eval_mode).c_str());
         printf("\",\n    \"file\": \"");
         EncodeJSONString((*e)->inputs_[0]->path().c_str());
         printf("\",\n    \"output\": \"");
