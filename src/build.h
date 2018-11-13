@@ -137,7 +137,8 @@ struct CommandRunner {
 /// Options (e.g. verbosity, parallelism) passed to a build.
 struct BuildConfig {
   BuildConfig() : verbosity(NORMAL), dry_run(false), parallelism(1),
-                  failures_allowed(1), max_load_average(-0.0f) {}
+                  failures_allowed(1), max_load_average(-0.0f),
+                  expand_rsp(Edge::ECM_NORMAL) {}
 
   enum Verbosity {
     NORMAL,
@@ -151,6 +152,7 @@ struct BuildConfig {
   /// The maximum load average we must not exceed. A negative value
   /// means that we do not have any limit.
   double max_load_average;
+  Edge::EvaluateCommandMode expand_rsp;
 };
 
 /// Builder wraps the build process: starting commands, updating status.
